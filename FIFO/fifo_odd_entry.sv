@@ -58,7 +58,7 @@ module fifo_odd_entry
 	// empty logic
 	always_ff @(posedge clk or negedge rst_n)
 		if (~rst_n)
-			empty <= '0;
+			empty <= '1;
 		else
 			empty <= (rd_ptr_next == wr_ptr_next);
 
@@ -142,7 +142,7 @@ module fifo_odd_entry
 	// empty logic
 	always_ff @(posedge clk or negedge rst_n)
 		if (~rst_n)
-			empty <= '0;
+			empty <= '1;
 		else
 			empty <= (fifo_count_next == '0);
 
