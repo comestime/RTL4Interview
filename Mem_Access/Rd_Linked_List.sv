@@ -19,6 +19,8 @@
 		cycle b: {D3, D2}
 		cycle c: {D5, D4}
 			...
+
+	Assuming the linked list is endless, don't need to consider out of bound issue
 */
 
 module Rd_Linked_List 
