@@ -56,7 +56,8 @@ module fifo_even_entry
 
 	// memory logic
 	always_ff @(posedge clk)
-		mem[wr_ptr[AWIDTH-1:0]] <= din;
+		if (wen & ~full)
+			mem[wr_ptr[AWIDTH-1:0]] <= din;
 
 	assign dout = mem[rd_ptr[AWIDTH-1:0]];
 
@@ -132,7 +133,8 @@ module fifo_even_entry
 
 	// memory logic
 	always_ff @(posedge clk)
-		mem[wr_ptr] <= din;
+		if (~full & wen)
+			mem[wr_ptr] <= din;
 
 	assign dout = mem[rd_ptr];
 
