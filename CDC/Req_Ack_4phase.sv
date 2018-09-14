@@ -38,7 +38,7 @@ module Req_Ack_4phase_Sender
 		else if (~req & ~ack)
 			ready <= '1;
 
-	always_ff @(posedge clk)
+	always_ff @(posedge clk1)
 		if (valid & ready)
 			dout <= din;
 	
@@ -61,7 +61,7 @@ module Req_Ack_4phase_Receiver
 );
 
 	always_ff @(posedge clk2 or negedge rst2_n)
-		if (~rst1_n)
+		if (~rst2_n)
 			valid <= '0;
 		else if (valid & ready)		// this condition needs to be put first, in case multiple data to be sent
 			valid <= '0;
@@ -69,7 +69,7 @@ module Req_Ack_4phase_Receiver
 			valid <= '1;
 	
 	always_ff @(posedge clk2 or negedge rst2_n)
-		if (~rst1_n)
+		if (~rst2_n)
 			ack <= '0;
 		else if (valid & ready)
 			ack <= '1;
