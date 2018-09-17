@@ -7,6 +7,10 @@
 	Solution 1 is called "full register slice", that cuts the timing path b/w slave and mater
 	Solution 2 is called "pass through", that does not add any latency b/w slave and master
 	Solution 3 is called "forward register slice", that cust the timing path of valid but not ready
+
+	Reference:
+		https://www.southampton.ac.uk/~bim/notes/cad/reference/ZyboWorkshop/2015_2_zybo_labsolution/lab2/lab2.srcs/sources_1/ipshared/xilinx.com/axi_register_slice_v2_1/03a8e0ba/hdl/verilog/axi_register_slice_v2_1_axic_register_slice.v
+
 */
 
 // Solution 1: using a 2-entry FIFO to break the timing path
