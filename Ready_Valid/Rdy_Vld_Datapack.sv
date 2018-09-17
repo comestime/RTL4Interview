@@ -3,6 +3,10 @@
 	and then assert vld to its downstream logic
 	
 	Using valid/ready procotol to transfer data
+
+	Solution 1 is called "full register slice", that cuts the timing path b/w slave and mater
+	Solution 2 is called "pass through", that does not add any latency b/w slave and master
+	Solution 3 is called "forward register slice", that cust the timing path of valid but not ready
 */
 
 // Solution 1: using a 2-entry FIFO to break the timing path

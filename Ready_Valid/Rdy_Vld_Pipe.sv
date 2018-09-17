@@ -1,6 +1,8 @@
 /*
 	Pipe stage 0: reg0 (takes vld_in and produces rdy_out)
 	Pipe stage 1: reg1 (takes rdy_in and produces vld_out)
+	
+	This solution is called "forward register slice", that cuts the timing path of valid but not ready
 */
 
 module Rdy_Vld_Pipe
