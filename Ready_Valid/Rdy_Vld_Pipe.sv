@@ -3,6 +3,8 @@
 	
 	Solution 1 is called "forward register slice", that cuts the timing path of valid but not ready
 	Solution 2 is called "reverse register slice", that cuts the timing path of ready but not valid
+	Solution 3 is called "pass through", which has not register between ready and valid (not shown here)
+	Solution 4 is called "full register slice", that cuts the timing path of both valid and ready (essentially a FIFO, not shown here)
 
 	Reference:
 		https://www.southampton.ac.uk/~bim/notes/cad/reference/ZyboWorkshop/2015_2_zybo_labsolution/lab2/lab2.srcs/sources_1/ipshared/xilinx.com/axi_register_slice_v2_1/03a8e0ba/hdl/verilog/axi_register_slice_v2_1_axic_register_slice.v
