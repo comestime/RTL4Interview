@@ -6,7 +6,8 @@
 
 	Solution 1 is called "full register slice", that cuts the timing path b/w slave and mater
 	Solution 2 is called "pass through", that does not add any latency b/w slave and master
-	Solution 3 is called "forward register slice", that cust the timing path of valid but not ready
+	Solution 3 is called "forward register slice", that cuts the timing path of valid but not ready
+	Solution 4 is called "reverse register slice", that cuts the timing path of ready but not valid
 
 	Reference:
 		https://www.southampton.ac.uk/~bim/notes/cad/reference/ZyboWorkshop/2015_2_zybo_labsolution/lab2/lab2.srcs/sources_1/ipshared/xilinx.com/axi_register_slice_v2_1/03a8e0ba/hdl/verilog/axi_register_slice_v2_1_axic_register_slice.v
@@ -68,7 +69,7 @@ module Rdy_Vld_Datapack_1
 endmodule
 
 
-// Solution 2: using 3 intermediate data buffers
+// Solution 2: using 3 intermediate data buffers and only cuts forward path
 module Rdy_Vld_Datapack_2
 	# ( parameter DWIDTH = 8)
 (
@@ -163,3 +164,72 @@ module Rdy_Vld_Datapack_3
 			buffer[wr_ptr] <= din;
 
 endmodule
+
+
+// Solution 4: using 3 intermediate data buffers and only cuts reverse path
+module Rdy_Vld_Datapack_2
+	# ( parameter DWIDTH = 8)
+(
+	input						clk,
+	input						rst_n,
+
+	input [DWIDTH-1:0]			din,
+	input 						vld_in,
+	output						rdy_out,
+
+	output logic [DWIDTH*4-1:0]	dout,
+	output logic				vld_out,
+	input						rdy_in,
+);
+
+	logic [2:0][DWIDTH-1:0]		data_buf;
+	logic [1:0]					wr_ptr;			// wr pointer to index data buffer
+	logic [DWIDTH-1:0]			temp_buf;
+	logic						has_vld_storage;// has valid storage in temp_buf
+
+	// data output assignment
+	assign dout = {	(has_vld_storage ? temp_buf : din),
+					data_buf[2], data_buf[1], data_buf[0] };
+
+	assign vld_out = (wr_ptr == 2'b11) & vld_in | has_vld_storage;
+
+	// rdy_out logic
+	always_ff @(posedge clk or negedge rst_n)
+		if (~rst_n)
+			rdy_out <= '0;
+		else
+			rdy_out <= rdy_in | ~has_vld_storage;
+
+	// wr_ptr logic 
+	always_ff @(posedge clk or negedge rst_n)
+		if (~rst_n)
+			wr_ptr <= '0;
+		else if (vld_in & rdy_out)
+			wr_ptr <= wr_ptr + 1'b1;
+
+	// intermediate buffer storage
+	genvar i
+	generate
+		for (i = 0; i < 3; i = i + 1) begin
+			always_ff @(posedge clk)
+				if ((wr_ptr == i) & vld_in & rdy_out)
+					data_buf[i] <= din;
+		end
+	endgenerate
+
+	// temp_buf storage used for the 4th trunk of data but rdy_in is 0
+	always_ff @(posedge clk)
+		if ((wr_ptr == 2'b11) & vld_in & rdy_out)
+			temp_buf <= din;
+
+	// has_vld_storage logic
+	always_ff @(posedge clk or negedge rst_n)
+		if (~rst_n)
+			has_vld_storage <= '0;
+		else if ((wr_ptr == 2'b11) & vld_in & rdy_out & ~rdy_in)
+			has_vld_storage <= '1;
+		else if (has_vld_storage & rdy_in)
+			has_vld_storage <= '0;
+
+endmodule
+
