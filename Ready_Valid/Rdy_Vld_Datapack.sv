@@ -198,7 +198,7 @@ module Rdy_Vld_Datapack_2
 		if (~rst_n)
 			rdy_out <= '0;
 		else
-			rdy_out <= rdy_in | ~has_vld_storage;
+			rdy_out <= rdy_in | ~has_vld_storage_next;
 
 	// wr_ptr logic 
 	always_ff @(posedge clk or negedge rst_n)

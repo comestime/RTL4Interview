@@ -80,7 +80,7 @@ module Rdy_Vld_Pipe
 		if (~rst_n)
 			rdy_out <= '0;
 		else
-			rdy_out <= rdy_in | ~has_vld_storage;
+			rdy_out <= rdy_in | ~has_vld_storage_next;
 
 	// has_vld_storage logic
 	always_comb begin
