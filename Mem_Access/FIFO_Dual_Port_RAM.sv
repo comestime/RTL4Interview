@@ -1,6 +1,6 @@
 /*
 
-	Build a FIFO from a 2 port RAM
+	Build a FIFO from a dual port RAM
 
 	------------------------------------------------------------------
 	| fifo_count	|	REN	|	WEN	|	fifo_count_next	|	dout <=	 |
