@@ -141,9 +141,11 @@ module FIFO_1Port_RAM #(
 	logic [AWIDTH-1:0]			dly_wr_addr;
 	logic [DWIDTH-1:0]			dly_wr_data;
 
-	logic [AWIDTH-2:0]			ram_addr0, ram_addr1;
+	logic						ram_ren0, ram_wen0, ram_dly_wr0;
+	logic						ram_ren1, ram_wen1, ram_dly_wr1;
 	logic						ram_oe0, ram_oe1;
 	logic						ram_we0, ram_we1;
+	logic [AWIDTH-2:0]			ram_addr0, ram_addr1;
 	logic [DWIDTH-1:0]			ram_data0, ram_data1;
 	logic						ram_rd_idx;
 
@@ -151,44 +153,51 @@ module FIFO_1Port_RAM #(
 	always_ff @(posedge clk or negedge rst_n)
 		if (~rst_n)
 			dly_wr_vld <= '0;
-		else if (ren & wen & ~full & (wr_ptr[0] == rd_ptr[0]))
+		else if (ren & ~empty & wen & ~full & (wr_ptr[0] == rd_ptr[0]))
 			dly_wr_vld <= '1;
 		else
 			dly_wr_vld <= '0;
 
 	always_ff @(posedge clk)
-		if (ren & wen & (wr_ptr[0] == rd_ptr[0]))
+		if (ren & ~empty & wen & ~full & (wr_ptr[0] == rd_ptr[0]))
 			dly_wr_data <= din;
 			dly_wr_addr <= wr_ptr;
 
 	// RAM control logic
-	assign ram_oe0 = (ren & ~rd_ptr[0]) | (wen & ~wr_ptr[0]) | (dly_wr_vld & ~dly_wr_addr[0]);
-	assign ram_oe1 = (ren & rd_ptr[0]) | (wen & wr_ptr[0]) | (dly_wr_vld & dly_wr_addr[0]);
+	assign ram_ren0 = (ren & ~empty & ~rd_ptr[0]);
+	assign ram_ren1 = (ren & ~empty & rd_ptr[0]);
+	assign ram_wen0 = (wen & ~full & ~wr_ptr[0]);
+	assign ram_wen1 = (wen & ~full & wr_ptr[0]);
+	assign ram_dly_wr0 = (dly_wr_vld & ~dly_wr_addr[0]);
+	assign ram_dly_wr1 = (dly_wr_vld & dly_wr_addr[0]);
 
-	assign ram_we0 = !(ren & ~rd_ptr[0]) & ram_oe0 & ~full;
-	assign ram_we1 = !(ren & rd_ptr[0]) & ram_oe1 & ~full;
+	assign ram_oe0 = ram_we0 | ram_ren0;
+	assign ram_oe1 = ram_we1 | ram_ren1;
 
-	assign ram_addr0 = (ren & ~rd_ptr[0])			?	rd_ptr[AWIDTH-1:1]		:
-					   (wen & ~wr_ptr[0])			?	wr_ptr[AWIDTH-1:1]		:
-														dly_wr_addr[AWIDTH-1:1]	;
-	assign ram_addr1 = (ren & rd_ptr[0])			?	rd_ptr[AWIDTH-1:1]		:
-					   (wen & wr_ptr[0])			?	wr_ptr[AWIDTH-1:1]		:
-														dly_wr_addr[AWIDTH-1:1]	;
+	assign ram_we0 = !ram_ren0 & (ram_wen0 | ram_dly_wr0);
+	assign ram_we1 = !ram_ren1 & (ram_wen1 | ram_dly_wr1);
 
-	assign ram_data0 = (!(ren & ~rd_ptr[0]) & (wen & ~rd_ptr[0]))				?	din			:
-					   (!(ren & ~rd_ptr[0]) & (dly_wr_vld & ~dly_wr_addr[0]))	?	dly_wr_data	:
-																					'z			;
-	assign ram_data1 = (!(ren & rd_ptr[0]) & (wen & rd_ptr[0]))					?	din			:
-					   (!(ren & rd_ptr[0]) & (dly_wr_vld & dly_wr_addr[0]))		?	dly_wr_data	:
-																					'z			;
+	assign ram_addr0 = ram_ren0			?	rd_ptr[AWIDTH-1:1]		:
+					   ram_wen0			?	wr_ptr[AWIDTH-1:1]		:
+											dly_wr_addr[AWIDTH-1:1]	;
+	assign ram_addr1 = ram_ren1			?	rd_ptr[AWIDTH-1:1]		:
+					   ram_wen1			?	wr_ptr[AWIDTH-1:1]		:
+											dly_wr_addr[AWIDTH-1:1]	;
+
+	assign ram_data0 = (!ram_ren0 & ram_wen0)		?	din			:
+					   (!ram_ren0 & ram_dly_wr0)	?	dly_wr_data	:
+														'z			;
+	assign ram_data1 = (!ram_ren1 & ram_wen1)		?	din			:
+					   (!ram_ren1 & ram_dly_wr1)	?	dly_wr_data	:
+														'z			;
 
 	// dout assignment
 	always_ff @(posedge clk or negedge rst_n)
 		if (~rst_n)
 			ram_rd_idx <= '0;
-		else if (ren & ~rd_ptr[0])
+		else if (ram_ren0)
 			ram_rd_idx <= '0;
-		else if (ren & rd_ptr[0])
+		else if (ram_ren1)
 			ram_rd_idx <= '1;
 
 	assign dout = ram_rd_idx ? ram_data1 : ram_data0;
