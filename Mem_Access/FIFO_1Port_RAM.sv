@@ -151,7 +151,7 @@ module FIFO_1Port_RAM #(
 	always_ff @(posedge clk or negedge rst_n)
 		if (~rst_n)
 			dly_wr_vld <= '0;
-		else if (ren & wen & (wr_ptr[0] == rd_ptr[0]))
+		else if (ren & wen & ~full & (wr_ptr[0] == rd_ptr[0]))
 			dly_wr_vld <= '1;
 		else
 			dly_wr_vld <= '0;
@@ -165,8 +165,8 @@ module FIFO_1Port_RAM #(
 	assign ram_oe0 = (ren & ~rd_ptr[0]) | (wen & ~wr_ptr[0]) | (dly_wr_vld & ~dly_wr_addr[0]);
 	assign ram_oe1 = (ren & rd_ptr[0]) | (wen & wr_ptr[0]) | (dly_wr_vld & dly_wr_addr[0]);
 
-	assign ram_we0 = !(ren & ~rd_ptr[0]) & ram_oe0;
-	assign ram_we1 = !(ren & rd_ptr[0]) & ram_oe1;
+	assign ram_we0 = !(ren & ~rd_ptr[0]) & ram_oe0 & ~full;
+	assign ram_we1 = !(ren & rd_ptr[0]) & ram_oe1 & ~full;
 
 	assign ram_addr0 = (ren & ~rd_ptr[0])			?	rd_ptr[AWIDTH-1:1]		:
 					   (wen & ~wr_ptr[0])			?	wr_ptr[AWIDTH-1:1]		:
