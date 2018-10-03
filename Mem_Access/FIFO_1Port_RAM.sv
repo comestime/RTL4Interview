@@ -171,11 +171,11 @@ module FIFO_1Port_RAM #(
 	assign ram_dly_wr0 = (dly_wr_vld & ~dly_wr_addr[0]);
 	assign ram_dly_wr1 = (dly_wr_vld & dly_wr_addr[0]);
 
-	assign ram_oe0 = ram_we0 | ram_ren0;
-	assign ram_oe1 = ram_we1 | ram_ren1;
+	assign ram_oe0 = ram_dly_wr0 | ram_wen0 | ram_ren0;
+	assign ram_oe1 = ram_dly_wr1 | ram_wen1 | ram_ren1;
 
-	assign ram_we0 = !ram_ren0 & (ram_wen0 | ram_dly_wr0);
-	assign ram_we1 = !ram_ren1 & (ram_wen1 | ram_dly_wr1);
+	assign ram_we0 = !ram_ren0;
+	assign ram_we1 = !ram_ren1;
 
 	assign ram_addr0 = ram_ren0			?	rd_ptr[AWIDTH-1:1]		:
 					   ram_wen0			?	wr_ptr[AWIDTH-1:1]		:
@@ -184,12 +184,8 @@ module FIFO_1Port_RAM #(
 					   ram_wen1			?	wr_ptr[AWIDTH-1:1]		:
 											dly_wr_addr[AWIDTH-1:1]	;
 
-	assign ram_data0 = (!ram_ren0 & ram_wen0)		?	din			:
-					   (!ram_ren0 & ram_dly_wr0)	?	dly_wr_data	:
-														'z			;
-	assign ram_data1 = (!ram_ren1 & ram_wen1)		?	din			:
-					   (!ram_ren1 & ram_dly_wr1)	?	dly_wr_data	:
-														'z			;
+	assign ram_data0 = ram_ren0 ? 'z : (ram_wen0 ? din : dly_wr_data);
+	assign ram_data1 = ram_ren1 ? 'z : (ram_wen1 ? din : dly_wr_data);
 
 	// dout assignment
 	always_ff @(posedge clk or negedge rst_n)
