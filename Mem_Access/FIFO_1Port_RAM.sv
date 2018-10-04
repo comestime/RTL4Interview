@@ -42,7 +42,8 @@ module FIFO_1Port_RAM #(
 	logic						ram_oe0, ram_oe1;
 	logic						ram_we0, ram_we1;
 	logic [AWIDTH-2:0]			ram_addr0, ram_addr1;
-	logic [DWIDTH-1:0]			ram_data0, ram_data1;
+	logic [DWIDTH-1:0]			ram_din0, ram_din1;
+	logic [DWIDTH-1:0]			ram_dout0, ram_dout1;
 	logic						ram_rd_idx;
 
 	// delayed write logic
@@ -80,8 +81,8 @@ module FIFO_1Port_RAM #(
 					   ram_wen1			?	wr_ptr[AWIDTH-1:1]		:
 											dly_wr_addr[AWIDTH-1:1]	;
 
-	assign ram_data0 = ram_ren0 ? 'z : (ram_wen0 ? din : dly_wr_data);
-	assign ram_data1 = ram_ren1 ? 'z : (ram_wen1 ? din : dly_wr_data);
+	assign ram_din0 = ram_wen0 ? din : dly_wr_data;
+	assign ram_din1 = ram_wen1 ? din : dly_wr_data;
 
 	// dout assignment
 	always_ff @(posedge clk or negedge rst_n)
@@ -92,7 +93,7 @@ module FIFO_1Port_RAM #(
 		else if (ram_ren1)
 			ram_rd_idx <= '1;
 
-	assign dout = ram_rd_idx ? ram_data1 : ram_data0;
+	assign dout = ram_rd_idx ? ram_dout1 : ram_dout0;
 
 	// FIFO pointer logic
 	assign fifo_count_next = fifo_count + (wen & ~full) - (ren & ~empty);
@@ -130,7 +131,8 @@ module FIFO_1Port_RAM #(
 	// 1-port RAM instantiation
 	ram_1p	u_ram0 (
 		.clk		(clk),
-		.data		(ram_data0),
+		.din		(ram_din0),
+		.dout		(ram_dout0),
 		.oe			(ram_oe0),
 		.we			(ram_we0),
 		.addr		(ram_addr0)
@@ -138,7 +140,8 @@ module FIFO_1Port_RAM #(
 	
 	ram_1p	u_ram1 (
 		.clk		(clk),
-		.data		(ram_data1),
+		.din		(ram_din1),
+		.dout		(ram_dout1),
 		.oe			(ram_oe1),
 		.we			(ram_we1),
 		.addr		(ram_addr1)
