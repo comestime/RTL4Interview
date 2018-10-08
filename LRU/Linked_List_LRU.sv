@@ -3,7 +3,7 @@
 	Design an LRU block using linked list mechanism. Head node is the MRU entry, while tail node is the LRU entry.
 	Each entry of the linked list consist of 2 counters, which is the previous node index and next node index;
 	Each entry also keeps 2 bits indicating whether this node is the head or the tail.
-	Total storage = n entries x ( 2b + 2 X log(n)) ~= O(nlog(n))
+	Total storage = n entries x 2 x log(n) + 2 x log(n) ~= O(nlog(n))
 
 */
 

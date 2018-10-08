@@ -2,6 +2,9 @@
 	Design an LRU block using Systolic Array
 	Implementation details see the the reference in this directory
 
+	Storage for every 2 stages: 3 x log(n) + 1
+	Total storage = n / 2 x (3 x log(n) + 1) ~= 1.5nlog(n) ~= O(nlog(n))
+
 */
 
 module Systolic_Array_LRU
